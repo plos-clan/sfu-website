@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>段错误大学 | Segmentation Fault University</title>
+    <!-- 引入优雅字体 & 图标库 (仅用于辅助视觉) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f9fe;
+            color: #1a2e4b;
+            line-height: 1.5;
+        }
+
+        /* 蓝色系主题 */
+        :root {
+            --sfu-deep-blue: #0a2f6c;
+            --sfu-primary: #1a4b8c;
+            --sfu-accent: #2a7faa;
+            --sfu-light-bg: #e7f0fd;
+            --sfu-soft-blue: #d4e4fc;
+            --sfu-white: #ffffff;
+            --sfu-gray-light: #f0f4fa;
+            --shadow-sm: 0 8px 20px rgba(10, 47, 108, 0.08);
+            --shadow-md: 0 12px 28px rgba(10, 47, 108, 0.12);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- 头部导航 ----- */
+        .header {
+            background-color: var(--sfu-white);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 3px solid var(--sfu-deep-blue);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            padding: 12px 0;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-img {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--sfu-deep-blue);
+            border-radius: 14px;
+            box-shadow: 0 4px 8px rgba(10, 47, 108, 0.2);
+        }
+
+        /* 校徽图片容器 —— 直接使用 img 标签 */
+        .logo-img img {
+            width: 48px;
+            height: 48px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-text h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--sfu-deep-blue);
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        .logo-text .eng-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--sfu-primary);
+            letter-spacing: 0.5px;
+        }
+
+        /* 导航菜单 */
+        .nav-menu {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link {
+            display: inline-block;
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: #1e3a5f;
+            text-decoration: none;
+            border-radius: 40px;
+            transition: all 0.2s ease;
+            background-color: transparent;
+        }
+
+        .nav-link i {
+            margin-right: 8px;
+            font-size: 0.95rem;
+            color: var(--sfu-accent);
+        }
+
+        .nav-link:hover {
+            background-color: var(--sfu-light-bg);
+            color: var(--sfu-deep-blue);
+        }
+
+        .nav-link.personal {
+            background-color: var(--sfu-deep-blue);
+            color: white;
+            box-shadow: 0 4px 8px rgba(10, 47, 108, 0.25);
+        }
+
+        .nav-link.personal i {
+            color: white;
+        }
+
+        .nav-link.personal:hover {
+            background-color: #1e4f8a;
+        }
+
+        /* 移动端菜单：不隐藏，只是自适应换行 */
+        @media screen and (max-width: 780px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .logo-area {
+                justify-content: center;
+            }
+            .nav-menu {
+                justify-content: center;
+            }
+            .nav-link {
+                padding: 8px 14px;
+                font-size: 1rem;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .nav-menu {
+                gap: 4px;
+            }
+            .nav-link {
+                padding: 8px 10px;
+                font-size: 0.9rem;
+            }
+            .logo-text h1 {
+                font-size: 1.4rem;
+            }
+			.code-block {
+				font-size: 0.9rem;
+				padding: 18px 14px;
+			}
+        }
+
+        /* ----- HERO 区域 ----- */
+        .hero {
+            background: linear-gradient(135deg, #d4e4fc 0%, #b3cef0 100%);
+            padding: 48px 0;
+            border-bottom: 1px solid rgba(10, 47, 108, 0.1);
+        }
+
+        .hero-grid {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .hero-left {
+            flex: 1 1 300px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background-color: var(--sfu-deep-blue);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 6px 18px;
+            border-radius: 40px;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-left h2 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--sfu-deep-blue);
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+
+        .hero-left .hero-sub {
+            font-size: 1.2rem;
+            color: #1e4a6b;
+            margin-bottom: 28px;
+            font-weight: 500;
+        }
+
+        .hero-desc {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-bottom: 32px;
+            max-width: 550px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: 0.2s;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--sfu-deep-blue);
+            color: white;
+            box-shadow: 0 8px 16px rgba(10, 47, 108, 0.2);
+        }
+
+        .btn-primary:hover {
+            background-color: #1e4f8a;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--sfu-deep-blue);
+            color: var(--sfu-deep-blue);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--sfu-deep-blue);
+            color: white;
+        }
+
+        .hero-right {
+            flex: 1 1 300px;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(4px);
+            border-radius: 32px;
+            padding: 28px 24px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .code-block {
+            font-family: 'Menlo', 'Consolas', monospace;
+            background: #0a1e2f;
+            color: #b7e1f7;
+            padding: 24px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            box-shadow: inset 0 0 0 1px #2c5270;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            display: block;
+			white-space: pre-wrap;      /* 保留空格/缩进，同时允许在边界处自动换行 */
+			word-break: break-word;     /* 长单词或连续字符强制断行，防止溢出 */
+			overflow-wrap: break-word;
+        }
+        .comment { color: #7f9faa; }
+        .keyword { color: #79c0ff; }
+        .string { color: #a5d6ff; }
+        .error-mock { color: #ff9b9b; }
+
+        /* ----- 王牌专业卡片 ----- */
+        .section {
+            padding: 72px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .section-title h3 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--sfu-deep-blue);
+        }
+
+        .section-title p {
+            font-size: 1.1rem;
+            color: #3a5e7a;
+            max-width: 700px;
+            margin: 12px auto 0;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: var(--sfu-white);
+            padding: 32px 24px;
+            border-radius: 28px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s;
+            border: 1px solid rgba(26, 75, 140, 0.08);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--sfu-soft-blue);
+        }
+
+        .card-icon {
+            font-size: 2.8rem;
+            color: var(--sfu-deep-blue);
+            margin-bottom: 24px;
+        }
+
+        .feature-card h4 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0a2f6c;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: #2e4b6b;
+            margin-bottom: 24px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--sfu-light-bg);
+            color: var(--sfu-deep-blue);
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+        }
+
+        /* 亮点数据/段错误趣味 */
+        .fun-fact {
+            background: var(--sfu-deep-blue);
+            color: white;
+            padding: 40px 0;
+            margin-top: 20px;
+        }
+
+        .fact-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            text-align: center;
+            gap: 30px;
+        }
+
+        .fact-item h5 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .fact-item span {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* 新闻/招生简章提示 */
+        .news-preview {
+            background: var(--sfu-gray-light);
+        }
+
+        .news-flex {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            flex: 1 1 280px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .news-card .date {
+            color: var(--sfu-accent);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .news-card h5 {
+            font-size: 1.3rem;
+            margin: 10px 0;
+            color: var(--sfu-deep-blue);
+        }
+
+        .link-arrow {
+            color: var(--sfu-primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        /* ----- 页脚 ----- */
+        .footer {
+            background: #0a1e2f;
+            color: #d0e2ff;
+            padding: 48px 0 24px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer h6 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .footer ul {
+            list-style: none;
+        }
+
+        .footer li {
+            margin-bottom: 12px;
+        }
+
+        .footer a {
+            color: #b8d4fc;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .contact-info i {
+            width: 24px;
+            color: var(--sfu-accent);
+        }
+
+        .domain-highlight {
+            background: #132c42;
+            padding: 8px 16px;
+            border-radius: 40px;
+            display: inline-block;
+            font-family: monospace;
+            margin-top: 12px;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 24px;
+            border-top: 1px solid #1e405b;
+            font-size: 0.9rem;
+            color: #9bb9da;
+        }
+
+        /* 响应式微调 */
+        @media (max-width: 600px) {
+            .hero-left h2 {
+                font-size: 2.2rem;
+            }
+            .section {
+                padding: 48px 0;
+            }
+            .btn {
+                padding: 12px 24px;
+            }
+        }
+    </style>
+	<script>
+	  document.addEventListener('DOMContentLoaded', function() {
+		document.querySelectorAll('a').forEach(link => {
+		  link.target = '_blank';
+		});
+	  });
+	</script>
+</head>
+<body>
+    <!-- 头部：包含校徽（使用 img 标签）、菜单 -->
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo-area">
+                <div class="logo-img">
+                    <!-- 校徽图片：直接使用 img 引用 logo.svg -->
+                    <img src="sfu_4096x4096.png" alt="段错误大学校徽">
+                </div>
+                <div class="logo-text">
+                    <h1>段错误大学</h1>
+                    <span class="eng-name">Segmentation Fault University · SFU</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-link"><i class="fas fa-university"></i> 关于校园</a>
+                <a href="#" class="nav-link"><i class="fas fa-map-signs"></i> 参观校园</a>
+                <a href="#" class="nav-link"><i class="fas fa-file-alt"></i> 招生简章</a>
+                <a href="#" class="nav-link personal"><i class="fas fa-user-graduate"></i> 个人管理</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero 区域：展示核心与编译原理氛围 -->
+        <section class="hero">
+            <div class="container hero-grid">
+                <div class="hero-left">
+                    <h2>没有未捕获的段错误<br>只有待调试的未来</h2>
+                    <div class="hero-sub">Segmentation Fault? We debug the future.</div>
+                    <p class="hero-desc">
+                        段错误大学 (SFU) 主攻计算机科学，以操作系统与编程语言设计闻名于世。
+                        在这里，每一个 core dumped 都是通向精通的勋章。
+                    </p>
+                    <div class="btn-group">
+                        <a href="#" class="btn btn-primary"><i class="fas fa-graduation-cap"></i> 招生简章</a>
+                        <a href="#" class="btn btn-outline"><i class="fas fa-map-marked-alt"></i> 参观校园</a>
+                    </div>
+                </div>
+                <div class="hero-right">
+                    <div class="code-block">
+                        <span class="code-line"><span class="keyword">fn</span> <span class="string">main</span>() {</span>
+                        <span class="code-line">    <span class="keyword">let</span> future = <span class="string">"Segmentation Fault University"</span>;</span>
+                        <span class="code-line">    <span class="keyword">println!</span>(<span class="string">"Welcome to { }"</span>, future);</span>
+                        <span class="code-line">}</span>
+						<br>
+						<span class="code-line">>> Segmentation fault (core dumped)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 王牌专业介绍 + 卡片 -->
+        <section class="section">
+            <div class="container">
+                <div class="section-title">
+                    <h3>全心全意办编程教育</h3>
+					<h5>全心全意在哪</h5>
+                    <p>全国唯一的“段错误研究中心”，计算机科学闻名遐迩</p>
+                </div>
+                <div class="card-grid">
+                    <div class="feature-card">
+                        <div class="card-icon"><i class="fas fa-cogs"></i></div>
+                        <h4>编译原理</h4>
+                        <p>从词法分析到代码生成，深入GVM、LLCC。</p>
+						<p><b>香香软软小图0奖</b>得主带领学生手把手刨析编译器。</p>
+                        <span class="tag"># 王牌专业</span>
+                    </div>
+                    <div class="feature-card">
+                        <div class="card-icon"><i class="fas fa-code-branch"></i></div>
+                        <h4>编程语言设计</h4>
+                        <p>设计属于你自己的语言，成为PLT领域大神。</p>
+						<p>SFU 自研教学语言“SegFault-lang”等你挑战。</p>
+                        <span class="tag"># 超大社区 <del>羡慕大社区</del></span>
+                    </div>
+                    <div class="feature-card">
+                        <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h4>操作系统开发</h4>
+                        <p>师资团队全员老资历，，带你一个月速通OSDev。</p>
+						<p>操作系统学院院长亲自带队，体验平地起高楼的乐趣。</p>
+                        <span class="tag"># ！？强强？！</span>
+                    </div>
+                    <div class="feature-card">
+                        <div class="card-icon"><i class="fas fa-robot"></i></div>
+                        <h4>Vibe Coding</h4>
+                        <p>紧跟时代潮流，用<del>流浪猫</del>LLM辅助开发。</p>
+						<p>妈妈再也不用担心我写不出代码了<p>
+                        <span class="tag"># 前沿技术</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 趣味数据 / 校园文化 -->
+        <div class="fun-fact">
+            <div class="container fact-grid">
+                <div class="fact-item">
+                    <h5>0x7FFF</h5>
+                    <span>平均堆栈深度</span>
+                </div>
+                <div class="fact-item">
+                    <h5>#1</h5>
+                    <span>逆天程度排名</span>
+                </div>
+                <div class="fact-item">
+                    <h5>100%</h5>
+                    <span>学生写过段错误</span>
+                </div>
+                <div class="fact-item">
+                    <h5>∞</h5>
+                    <span>对科学的热爱</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新闻 & 招生简章预览 -->
+        <section class="section news-preview">
+            <div class="container">
+                <div class="section-title">
+                    <h3>校园动态</h3>
+                    <p>了解最新动态、新闻、简章</p>
+                </div>
+                <div class="news-flex">
+                    <div class="news-card">
+                        <div class="date"><i class="far fa-calendar-alt"></i> 2026.04.17</div>
+                        <h5>校徽震撼首发</h5>
+                        <p>充分体现了Linuxer的惊世智慧和艺术细菌。采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 协议发布。群友看完都说帅！</p>
+                        <a href="sfu.svg" class="link-arrow">点击查看校徽矢量图版本<i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚：包含域名、邮箱、校徽信息等 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h6><i class="fas fa-map-pin"></i> 段错误大学 SFU</h6>
+                    <ul class="contact-info">
+                        <li><i class="fas fa-envelope"></i> 校园邮箱：<a href="mailto:sfu@plos.edu.ci">sfu@plos.edu.ci</a></li>
+                        <li><i class="fas fa-globe"></i> 官网：sfu.plos.edu.ci</li>
+                    </ul>
+                    <div class="domain-highlight">
+                        <i class="fas fa-link"></i> sfu.plos.edu.ci
+                    </div>
+                </div>
+                <div>
+                    <h6>友情链接<h6>
+                    <ul>
+                        <li><a href="https://CLimber-Rong.github.io/">CLimber-Rong的网站</a></li>
+                        <li><a href="https://plos-clan.org/">PLOS-CLAN官网</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h6>科创平台</h6>
+                    <ul>
+                        <li><a href="#">SFU镜像站</a></li>
+                        <li><a href="#">Lanima社区</a></li>
+                        <li><a href="#">图书馆</a></li>
+                        <li><a href="#">个人管理中心</a></li>
+                    </ul>
+                </div>
+				<div>
+                    <h6>组织机构</h6>
+                    <ul>
+						<li><a href="#">段错误大学校董会<br>（煞笔联合委员会-SFU分会）</a></li>
+                        <li><a href="#">编程语言设计院</a></li>
+                        <li><a href="#">操作系统学院</a></li>
+                        <li><a href="#">国企鱼基建集团</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h6>关注我们</h6>
+                    <p style="margin-bottom: 10px;">虚构整活 · 编写热爱</p>
+                    <div style="display: flex; gap: 16px; font-size: 1.6rem;">
+                        <a href="#" style="color:#b8d4fc;"><i class="fab fa-github"></i></a>
+                        <a href="#" style="color:#b8d4fc;"><i class="fab fa-qq"></i></a>
+                    </div>
+                    <p style="margin-top: 20px; font-size: 0.9rem;">
+                        <i class="fas fa-bug"></i> “没有未捕获的段错误，只有待调试的未来”
+                    </p>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2026 段错误大学 Segmentation Fault University (SFU). 虚构设定，整活专用。<br>
+				联系邮箱 sfu@plos.edu.ci
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
